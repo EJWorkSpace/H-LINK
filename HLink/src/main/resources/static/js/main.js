@@ -83,43 +83,44 @@ function decorateDday() {
 }
 
 // ======================= 즐겨찾기 =======================
-function toggleFavorite(button, event) {
+async function toggleFavorite(button, event) {
   event.stopPropagation(); // 카드 링크 클릭 방지
 
-  const noticeId = button.getAttribute('data-id');
-  if (!noticeId || noticeId === "0") {
-    console.error("⚠️ noticeId가 잘못됨:", noticeId);
+  const noticeId = Number(button.getAttribute('data-id'));
+  if (!noticeId || noticeId <= 0) {
+    console.warn("⚠️ 잘못된 noticeId:", noticeId);
     return;
   }
 
   console.log("⭐ 즐겨찾기 토글 시도:", noticeId);
 
-  fetch(`/api/favorite/toggle?noticeId=${noticeId}`, { method: "POST" })
-    .then(res => {
-      if (!res.ok) throw new Error("서버 오류");
-      return res.json ? res.json() : res; // 혹시 JSON 응답이면
-    })
-    .then(() => {
-      const icon = button.querySelector("i");
-      if (!icon) {
-        console.warn("⚠️ 아이콘을 찾을 수 없습니다.");
-        return;
-      }
-
-      // bi-star ↔ bi-star-fill 교체
-      if (icon.classList.contains("bi-star")) {
-        icon.classList.remove("bi-star");
-        icon.classList.add("bi-star-fill", "text-warning"); // 노란색 별
-      } else {
-        icon.classList.remove("bi-star-fill", "text-warning");
-        icon.classList.add("bi-star");
-      }
-
-      console.log("✅ 즐겨찾기 토글 완료:", noticeId);
-    })
-    .catch(err => {
-      console.error("❌ 즐겨찾기 토글 실패:", err);
+  try {
+    const res = await fetch('/api/favorites/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ noticeId })
     });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+    const icon = button.querySelector("i");
+    if (!icon) return;
+
+    if (data.added) {
+      icon.classList.remove('bi-star');
+      icon.classList.add('bi-star-fill', 'text-warning');
+    } else {
+      icon.classList.remove('bi-star-fill', 'text-warning');
+      icon.classList.add('bi-star');
+    }
+
+    console.log("✅ 즐겨찾기 토글 완료:", noticeId);
+
+  } catch (err) {
+    console.error("❌ 즐겨찾기 토글 실패:", err);
+    alert('즐겨찾기 처리 중 오류가 발생했습니다.');
+  }
 }
 
 // 즐겨찾기 상태 복원
@@ -128,18 +129,20 @@ async function hydrateStarsFromServer() {
     const res = await fetch('/api/favorites/ids');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const ids = await res.json();
+
     qsa('.star-btn').forEach(btn => {
       const id = Number(btn.getAttribute('data-id'));
       const icon = btn.querySelector('i');
+      if (!icon) return;
       if (ids.includes(id)) {
-        icon.classList.add('bi-star-fill');
+        icon.classList.add('bi-star-fill', 'text-warning');
         icon.classList.remove('bi-star');
       } else {
         icon.classList.add('bi-star');
-        icon.classList.remove('bi-star-fill');
+        icon.classList.remove('bi-star-fill', 'text-warning');
       }
     });
-  } catch(e) {
+  } catch (e) {
     console.warn('hydrateStarsFromServer failed', e);
   }
 }

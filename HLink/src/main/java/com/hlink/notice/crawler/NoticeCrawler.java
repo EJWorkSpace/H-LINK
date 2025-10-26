@@ -57,6 +57,7 @@ public class NoticeCrawler {
                 Element item = (Element) nodeList.item(i);
 
                 String title = getTagValue("title", item);
+                if (title != null) title = title.replaceAll("}$", "").trim();
                 String link = "https://www.hallym.ac.kr" + getTagValue("link", item);
                 String date = getTagValue("pubDate", item);
                 String author = getTagValue("author", item);

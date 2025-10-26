@@ -27,12 +27,3 @@ CREATE TABLE favorites (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_fav_notice FOREIGN KEY (notice_id) REFERENCES notices(id) ON DELETE CASCADE
 );
-
--- 테스트용 데이터
-INSERT INTO notices (title, link, date, category, summary, tags)
-VALUES
-('테스트 공지 1', 'https://www.hallym.ac.kr/bbs/test/1', NOW(), '학사공지', '테스트용 공지입니다.', '테스트,학사'),
-('테스트 공지 2', 'https://www.hallym.ac.kr/bbs/test/2', NOW(), '장학/등록공지', '장학 테스트 공지입니다.', '장학금,등록');
-
-INSERT INTO favorites (notice_id, user_id)
-VALUES (1, 1);

@@ -5,26 +5,38 @@
   <section class="animate-fadein">
     <h4 class="fw-bold mb-4"><i class="bi bi-star-fill text-warning"></i> 즐겨찾기</h4>
 
+    <!-- 카드 리스트 -->
     <div id="noticeList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
       <div class="col" th:each="n : ${notices}" th:data-id="${n.id}">
         <div class="card notice-card h-100 border-0 shadow-sm">
           <div class="card-body position-relative">
-            <div class="d-flex justify-content-between mb-2">
+
+            <!-- 상단: 카테고리 + 별 버튼 -->
+            <div class="d-flex justify-content-between mb-2 align-items-start">
               <span class="badge category-badge cat-[[${n.category}]]" th:text="${n.category}">학사</span>
-              <button class="btn btn-sm btn-ghost star-btn" type="button"
-                      th:attr="data-id=${n.id}" onclick="toggleFavorite(this, event)">
+              <button class="btn btn-sm btn-ghost star-btn position-relative z-3"
+                      type="button"
+                      th:attr="data-id=${n.id}"
+                      onclick="toggleFavorite(this, event)">
                 <i class="bi bi-star-fill text-warning"></i>
               </button>
             </div>
-            <a th:href="${n.link}" target="_blank" class="stretched-link text-dark text-decoration-none">
-              <h6 class="card-title fw-semibold" th:text="${n.title}">제목</h6>
-            </a>
+
+            <!-- 제목만 링크 -->
+            <h6 class="card-title fw-semibold mb-1">
+              <a th:href="${n.link}" target="_blank" class="text-decoration-none text-dark stretched-link">
+                <span th:text="${n.title}">제목</span>
+              </a>
+            </h6>
+
+            <!-- 날짜 -->
             <p class="small text-secondary" th:text="${n.date}">2025-10-26</p>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- 비어있을 때 -->
     <div th:if="${#lists.isEmpty(notices)}" class="text-center text-secondary py-5">
       <i class="bi bi-inbox fs-1"></i>
       <p class="mt-2">즐겨찾기한 공지가 없습니다.</p>

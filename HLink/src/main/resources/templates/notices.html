@@ -28,7 +28,9 @@
            th:data-category="${n.category}" th:data-deadline="${n.deadline}">
         <div class="card notice-card h-100 border-0 shadow-sm">
           <div class="card-body position-relative">
-            <div class="d-flex justify-content-between mb-2 position-relative">
+
+            <!-- 상단: 카테고리 + 별 버튼 -->
+            <div class="d-flex justify-content-between mb-2 align-items-start">
               <span class="badge category-badge cat-[[${n.category}]]" th:text="${n.category}">학사</span>
               <button class="btn btn-sm btn-ghost star-btn position-relative z-3"
                       type="button"
@@ -38,18 +40,26 @@
               </button>
             </div>
 
-            <a th:href="${n.link}" target="_blank" class="stretched-link text-decoration-none text-dark">
-              <h6 class="card-title fw-semibold" th:text="${n.title}">제목</h6>
-              <p class="small text-secondary mb-1">
-                <i class="bi bi-calendar-event"></i>
-                <span th:text="${n.date}">2025-10-26</span>
-                <span class="ms-2 dday-pill">D-3</span>
-              </p>
-              <p class="small mb-2" th:text="${n.summary} ?: '요약 준비 중...'"></p>
-              <div class="small text-secondary">
-                <span th:each="t : ${n.tags}" class="tag-badge" th:text="${t}">태그</span>
-              </div>
-            </a>
+            <!-- 제목만 링크 -->
+            <h6 class="card-title fw-semibold mb-1">
+              <a th:href="${n.link}" target="_blank" class="text-decoration-none text-dark stretched-link">
+                <span th:text="${n.title}">제목</span>
+              </a>
+            </h6>
+
+            <!-- 날짜 및 요약 -->
+            <p class="small text-secondary mb-1">
+              <i class="bi bi-calendar-event"></i>
+              <span th:text="${n.date}">2025-10-26</span>
+              <span class="ms-2 dday-pill">D-3</span>
+            </p>
+
+            <p class="small mb-2" th:text="${n.summary} ?: '요약 준비 중...'"></p>
+
+            <div class="small text-secondary">
+              <span th:each="t : ${n.tags}" class="tag-badge" th:text="${t}">태그</span>
+            </div>
+
           </div>
         </div>
       </div>
