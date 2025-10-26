@@ -6,9 +6,11 @@
     <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
       <div class="fw-semibold me-2 text-secondary">카테고리:</div>
       <button class="btn btn-sm btn-outline-primary active" data-filter="ALL" onclick="filterByCategory(this)">전체</button>
-      <button class="btn btn-sm btn-outline-primary" data-filter="학사" onclick="filterByCategory(this)">학사</button>
-      <button class="btn btn-sm btn-outline-primary" data-filter="장학" onclick="filterByCategory(this)">장학</button>
-      <button class="btn btn-sm btn-outline-primary" data-filter="SW학부" onclick="filterByCategory(this)">SW학부</button>
+      <button class="btn btn-sm btn-outline-primary" data-filter="학사공지" onclick="filterByCategory(this)">학사</button>
+      <button class="btn btn-sm btn-outline-primary" data-filter="장학/등록공지" onclick="filterByCategory(this)">장학</button>
+      <button class="btn btn-sm btn-outline-primary" data-filter="일반공지" onclick="filterByCategory(this)">일반</button>
+      <button class="btn btn-sm btn-outline-primary" data-filter="채용공지" onclick="filterByCategory(this)">채용</button>
+      <button class="btn btn-sm btn-outline-primary" data-filter="SW중심대학사업단" onclick="filterByCategory(this)">SW사업단</button>
 
       <div class="vr mx-3"></div>
 
@@ -23,28 +25,35 @@
     <div id="noticeList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
       <div class="col" th:each="n : ${notices}" th:data-id="${n.id}"
            th:data-category="${n.category}" th:data-deadline="${n.deadline}">
-        <div class="card notice-card h-100 border-0 shadow-sm">
-          <div class="card-body position-relative">
-            <div class="d-flex justify-content-between mb-2">
-              <span class="badge category-badge cat-[[${n.category}]]" th:text="${n.category}">학사</span>
-              <button class="btn btn-sm btn-ghost star-btn" type="button" th:attr="data-id=${n.id}" onclick="toggleFavorite(this)">
-                <i class="bi bi-star"></i>
-              </button>
-            </div>
-            <a th:href="${n.link}" target="_blank" class="stretched-link text-decoration-none text-dark">
-              <h6 class="card-title fw-semibold" th:text="${n.title}">공지 제목</h6>
-            </a>
-            <p class="small text-secondary mb-1">
-              <i class="bi bi-calendar-event"></i>
-              <span th:text="${n.date}">2025-10-26</span>
-			  <span class="ms-2 dday-pill">D-3</span>
-            </p>
-            <p class="small mb-2" th:text="${n.summary} ?: '요약 준비 중...'"></p>
-            <div class="small text-secondary">
-              <span th:each="t : ${n.tags}" class="tag-badge" th:text="${t}">장학금</span>
-            </div>
-          </div>
-        </div>
+		   <div class="card notice-card h-100 border-0 shadow-sm">
+		     <div class="card-body position-relative">
+		       <!-- 상단 카테고리 + 즐겨찾기 -->
+		       <div class="d-flex justify-content-between mb-2 position-relative">
+		         <span class="badge category-badge cat-[[${n.category}]]" th:text="${n.category}">학사</span>
+		         <button class="btn btn-sm btn-ghost star-btn position-relative z-3"
+		                 type="button"
+		                 th:attr="data-id=${n.id}"
+		                 onclick="toggleFavorite(this, event)">
+		           <i class="bi bi-star"></i>
+		         </button>
+		       </div>
+
+		       <!-- 공지 링크: 제목~본문까지만 감싸기 -->
+		       <a th:href="${n.link}" target="_blank" class="stretched-link text-decoration-none text-dark">
+		         <h6 class="card-title fw-semibold" th:text="${n.title}">제목</h6>
+
+		         <p class="small text-secondary mb-1">
+		           <i class="bi bi-calendar-event"></i>
+		           <span th:text="${n.date}">2025-10-26</span>
+		           <span class="ms-2 dday-pill">D-3</span>
+		         </p>
+		         <p class="small mb-2" th:text="${n.summary} ?: '요약 준비 중...'"></p>
+		         <div class="small text-secondary">
+		           <span th:each="t : ${n.tags}" class="tag-badge" th:text="${t}">태그</span>
+		         </div>
+		       </a>
+		     </div>
+		   </div>
       </div>
     </div>
 

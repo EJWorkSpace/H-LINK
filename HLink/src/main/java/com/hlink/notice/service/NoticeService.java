@@ -2,9 +2,21 @@
 
 package com.hlink.notice.service;
 
+import com.hlink.notice.crawler.NoticeCrawler;
+import com.hlink.notice.dto.NoticeDTO;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class NoticeService {
-    // 이후 크롤링 / AI 연동 로직 추가 예정
+
+    private final NoticeCrawler crawler;
+
+    public NoticeService(NoticeCrawler crawler) {
+        this.crawler = crawler;
+    }
+
+    public List<NoticeDTO> getAllNotices() {
+        return crawler.crawlAll();
+    }
 }
