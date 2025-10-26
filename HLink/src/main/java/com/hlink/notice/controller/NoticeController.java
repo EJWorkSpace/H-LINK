@@ -10,23 +10,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
+//✅ 공지 페이지
 @Controller
 public class NoticeController {
+ private final NoticeService noticeService;
 
-    private final NoticeService noticeService;
+ public NoticeController(NoticeService noticeService) {
+     this.noticeService = noticeService;
+ }
 
-    public NoticeController(NoticeService noticeService) {
-        this.noticeService = noticeService;
-    }
-
-    @GetMapping("/notices")
-    public String listNotices(Model model) {
-        List<NoticeDTO> notices = noticeService.getAllNotices();
-        model.addAttribute("notices", notices);
-        model.addAttribute("pageTitle", "한림대 공지");
-        return "notices";
-    }
-    
-    @GetMapping("/favorites")
-    public String favorites() { return "favorites"; }
+ @GetMapping("/notices")
+ public String listNotices(Model model) {
+     List<NoticeDTO> notices = noticeService.getAllNotices();
+     model.addAttribute("notices", notices);
+     model.addAttribute("pageTitle", "한림대 공지");
+     model.addAttribute("activeTab", "notices"); // 💡 layout용
+     return "notices";
+ }
 }

@@ -1,8 +1,8 @@
-// ===== 공통 유틸 =====
+// ======================= 공통 유틸 =======================
 function qs(sel, root=document){ return root.querySelector(sel); }
 function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
 
-// ===== 네비 active 처리 =====
+// ======================= 네비 active 처리 =======================
 function setActiveNav() {
   const path = location.pathname;
   qsa('.nav-link').forEach(a => a.classList.remove('active'));
@@ -13,7 +13,7 @@ function setActiveNav() {
   toActivate?.classList.add('active');
 }
 
-// ===== 검색 =====
+// ======================= 검색 =======================
 function handleSearch(e) {
   e.preventDefault();
   const q = qs('#searchInput')?.value.trim().toLowerCase() || '';
@@ -29,10 +29,9 @@ function handleSearch(e) {
   qs('#emptyState')?.classList.toggle('d-none', visible !== 0);
 }
 
-// ===== 카테고리 필터 =====
+// ======================= 카테고리 필터 =======================
 function filterByCategory(btn) {
   const cat = btn.getAttribute('data-filter');
-  // 버튼 active 토글
   qsa('.btn-outline-primary').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 
@@ -47,7 +46,7 @@ function filterByCategory(btn) {
   qs('#emptyState')?.classList.toggle('d-none', visible !== 0);
 }
 
-// ===== 정렬 =====
+// ======================= 정렬 =======================
 function sortNotices(mode) {
   const list = qs('#noticeList');
   const items = qsa('.col', list).filter(el => el.style.display !== 'none');
@@ -83,83 +82,76 @@ function decorateDday() {
   });
 }
 
-// ===== 즐겨찾기(LocalStorage) =====
-const STAR_KEY = 'hlink_favorites';
-function getStars() {
-  try { return JSON.parse(localStorage.getItem(STAR_KEY)) || []; } catch { return []; }
-}
-function saveStars(arr) { localStorage.setItem(STAR_KEY, JSON.stringify(arr)); }
+// ======================= 즐겨찾기 =======================
+function toggleFavorite(button, event) {
+  event.stopPropagation(); // 카드 링크 클릭 방지
 
-function toggleFavorite(btn, event) {
-  // 링크 열림 방지 (stretched-link 무력화)
-  event?.stopPropagation();
-  event?.preventDefault();
-
-  const id = btn.getAttribute('data-id');
-  const icon = btn.querySelector('i');
-  const stars = getStars();
-  const idx = stars.indexOf(id);
-
-  if (idx >= 0) {
-    stars.splice(idx, 1);
-    icon.classList.remove('bi-star-fill');
-    icon.classList.add('bi-star');
-  } else {
-    stars.push(id);
-    icon.classList.remove('bi-star');
-    icon.classList.add('bi-star-fill');
+  const noticeId = button.getAttribute('data-id');
+  if (!noticeId || noticeId === "0") {
+    console.error("⚠️ noticeId가 잘못됨:", noticeId);
+    return;
   }
-  saveStars(stars);
 
-  // 즐겨찾기 페이지에선 즉시 리스트 갱신
-  if (location.pathname.startsWith('/favorites')) {
-    renderFavoritesPage();
+  console.log("⭐ 즐겨찾기 토글 시도:", noticeId);
+
+  fetch(`/api/favorite/toggle?noticeId=${noticeId}`, { method: "POST" })
+    .then(res => {
+      if (!res.ok) throw new Error("서버 오류");
+      return res.json ? res.json() : res; // 혹시 JSON 응답이면
+    })
+    .then(() => {
+      const icon = button.querySelector("i");
+      if (!icon) {
+        console.warn("⚠️ 아이콘을 찾을 수 없습니다.");
+        return;
+      }
+
+      // bi-star ↔ bi-star-fill 교체
+      if (icon.classList.contains("bi-star")) {
+        icon.classList.remove("bi-star");
+        icon.classList.add("bi-star-fill", "text-warning"); // 노란색 별
+      } else {
+        icon.classList.remove("bi-star-fill", "text-warning");
+        icon.classList.add("bi-star");
+      }
+
+      console.log("✅ 즐겨찾기 토글 완료:", noticeId);
+    })
+    .catch(err => {
+      console.error("❌ 즐겨찾기 토글 실패:", err);
+    });
+}
+
+// 즐겨찾기 상태 복원
+async function hydrateStarsFromServer() {
+  try {
+    const res = await fetch('/api/favorites/ids');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const ids = await res.json();
+    qsa('.star-btn').forEach(btn => {
+      const id = Number(btn.getAttribute('data-id'));
+      const icon = btn.querySelector('i');
+      if (ids.includes(id)) {
+        icon.classList.add('bi-star-fill');
+        icon.classList.remove('bi-star');
+      } else {
+        icon.classList.add('bi-star');
+        icon.classList.remove('bi-star-fill');
+      }
+    });
+  } catch(e) {
+    console.warn('hydrateStarsFromServer failed', e);
   }
 }
 
-function hydrateStars() {
-  const stars = getStars().map(String); // 모두 문자열로 통일
-  document.querySelectorAll('.star-btn').forEach(btn => {
-    const id = String(btn.getAttribute('data-id'));
-    const icon = btn.querySelector('i');
-    if (stars.includes(id)) {
-      icon.classList.remove('bi-star');
-      icon.classList.add('bi-star-fill');
-    } else {
-      icon.classList.remove('bi-star-fill');
-      icon.classList.add('bi-star');
-    }
-  });
-}
-
-// ===== 즐겨찾기 페이지 렌더링 (클라 사이드 필터) =====
-function renderFavoritesPage() {
-  const list = qs('#noticeList');
-  if (!list) return; // 공지 목록 페이지가 아니면 스킵
-  const stars = getStars();
-  let visible = 0;
-  qsa('.col', list).forEach(col => {
-    const id = col.getAttribute('data-id');
-    const show = stars.includes(id);
-    col.style.display = show ? '' : 'none';
-    if (show) visible++;
-  });
-  qs('#emptyState')?.classList.toggle('d-none', visible !== 0);
-}
-
-// ===== 초기화 =====
+// ======================= 초기화 =======================
 document.addEventListener('DOMContentLoaded', () => {
   setActiveNav();
   decorateDday();
-  hydrateStars();
-
-  // 즐겨찾기 페이지면 화면 필터 적용
-  if (location.pathname.startsWith('/favorites')) {
-    renderFavoritesPage();
-  }
+  hydrateStarsFromServer();
 });
 
-// 전역 노출(템플릿 onclick에서 호출)
+// 전역 노출 (Thymeleaf 템플릿에서 onclick용)
 window.handleSearch = handleSearch;
 window.filterByCategory = filterByCategory;
 window.sortNotices = sortNotices;
