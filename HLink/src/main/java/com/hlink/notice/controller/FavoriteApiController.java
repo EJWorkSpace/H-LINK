@@ -19,9 +19,10 @@ public class FavoriteApiController {
 
 
     @PostMapping("/toggle")
-    public ResponseEntity<Boolean> toggle(@RequestParam Long noticeId) {
+    public Map<String, Object> toggle(@RequestBody Map<String, Long> body) {
+        Long noticeId = body.get("noticeId");
         boolean result = favoriteService.toggle(noticeId);
-        return ResponseEntity.ok(result);
+        return Map.of("added", result);
     }
 
     @GetMapping("/ids")
