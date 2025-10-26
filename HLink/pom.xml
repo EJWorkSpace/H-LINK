@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.hlink</groupId>
-	<artifactId>notice</artifactId>
+	<artifactId>hlink</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>HLink</name>
 	<description>AI 기반 한림대학교 공지 통합 서비스</description>
