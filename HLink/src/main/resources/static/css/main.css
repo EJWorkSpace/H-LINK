@@ -1,3 +1,4 @@
+/* src/main/resources/static/css/main.css */
 .notice-card {
   border-radius: 16px;
   transition: all 0.25s ease;
@@ -14,10 +15,44 @@
   border-color: #2d6cdf;
 }
 
+/* Fade-in 효과 */
 .animate-fadein {
   animation: fadein 0.5s ease;
 }
 @keyframes fadein {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* 카테고리 색상 */
+.category-badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.6em;
+  border-radius: 0.5rem;
+  color: #fff;
+}
+.cat-학사공지 { background-color: #2d6cdf; }
+.cat-장학등록공지, .cat-장학 { background-color: #28a745; }
+.cat-일반공지 { background-color: #ffc107; color: #212529; }
+.cat-채용공지 { background-color: #e83e8c; }
+.cat-SW중심대학사업단, .cat-SW학부 { background-color: #6610f2; }
+
+/* 태그 */
+.tag-badge {
+  display: inline-block;
+  margin-right: 0.3rem;
+  color: #2d6cdf;
+  font-weight: 500;
+}
+
+/* D-day 강조 */
+.dday-pill {
+  font-weight: 600;
+}
+.dday-urgent {
+  color: #dc3545;
+}
+
+.star-btn .bi-star-fill.text-warning {
+  color: #ffc107 !important; /* 부트스트랩 노란색 */
 }
