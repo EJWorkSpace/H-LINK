@@ -1,39 +1,46 @@
-// DB 테이블 매핑
 package com.hlink.notice.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import lombok.*;
 
 @Entity
-@Table(name = "notice")
+@Table(name = "notices")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Notice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 500)
     private String title;
-    private String category;
-    private LocalDate date;
-    private LocalDate deadline;
 
-    @Column(length = 500)
-    private String summary;
-
+    @Column(nullable = false, length = 1000)
     private String link;
 
-    // Getter/Setter
-    public Long getId() { return id; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
-    public LocalDate getDeadline() { return deadline; }
-    public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
-    public String getSummary() { return summary; }
-    public void setSummary(String summary) { this.summary = summary; }
-    public String getLink() { return link; }
-    public void setLink(String link) { this.link = link; }
+    @Column(nullable = false)
+    private java.time.LocalDateTime date;
+
+    @Column(nullable = false, length = 100)
+    private String category;
+
+    private java.time.LocalDateTime deadline;
+
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    // 쉼표로 저장 (예: "장학,모집")
+    private String tags;
+
+    @Column(name = "created_at", updatable = false)
+    private java.time.LocalDateTime createdAt;
+
+    @PrePersist
+    public void onCreate() {
+        if (createdAt == null) createdAt = java.time.LocalDateTime.now();
+    }
 }

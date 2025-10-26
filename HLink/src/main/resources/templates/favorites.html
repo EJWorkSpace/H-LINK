@@ -1,57 +1,34 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout (~{::body})">
-<body>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::content})}">
+<th:block th:fragment="content">
   <section class="animate-fadein">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h5 class="fw-bold mb-0"><i class="bi bi-star-fill text-warning me-2"></i>즐겨찾기</h5>
-      <button class="btn btn-outline-danger btn-sm" onclick="clearAllFavorites()">전체 비우기</button>
-    </div>
+    <h4 class="fw-bold mb-4"><i class="bi bi-star-fill text-warning"></i> 즐겨찾기</h4>
 
     <div id="noticeList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      <div class="col" th:each="n : ${notices}" th:data-id="${n.id}"
-           th:data-category="${n.category}" th:data-deadline="${n.deadline}">
+      <div class="col" th:each="n : ${notices}" th:data-id="${n.id}">
         <div class="card notice-card h-100 border-0 shadow-sm">
           <div class="card-body position-relative">
-            <div class="d-flex justify-content-between mb-2 position-relative">
+            <div class="d-flex justify-content-between mb-2">
               <span class="badge category-badge cat-[[${n.category}]]" th:text="${n.category}">학사</span>
-              <button class="btn btn-sm btn-ghost star-btn position-relative z-3"
-                      type="button"
-                      th:attr="data-id=${n.id}"
-                      onclick="toggleFavorite(this, event)">
+              <button class="btn btn-sm btn-ghost star-btn" type="button"
+                      th:attr="data-id=${n.id}" onclick="toggleFavorite(this, event)">
                 <i class="bi bi-star-fill text-warning"></i>
               </button>
             </div>
-            <a th:href="${n.link}" target="_blank" class="stretched-link text-decoration-none text-dark">
+            <a th:href="${n.link}" target="_blank" class="stretched-link text-dark text-decoration-none">
               <h6 class="card-title fw-semibold" th:text="${n.title}">제목</h6>
             </a>
-            <p class="small text-secondary mb-1">
-              <i class="bi bi-calendar-event"></i>
-              <span th:text="${n.date}">2025-10-26</span>
-              <span class="ms-2 dday-pill">D-3</span>
-            </p>
-            <p class="small mb-2" th:text="${n.summary} ?: '요약 준비 중...'"></p>
-            <div class="small text-secondary">
-              <span th:each="t : ${n.tags}" class="tag-badge" th:text="${t}">태그</span>
-            </div>
+            <p class="small text-secondary" th:text="${n.date}">2025-10-26</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 비어있을 때 -->
-    <div id="emptyState" class="text-center text-secondary py-5">
-      <i class="bi bi-star fs-1"></i>
+    <div th:if="${#lists.isEmpty(notices)}" class="text-center text-secondary py-5">
+      <i class="bi bi-inbox fs-1"></i>
       <p class="mt-2">즐겨찾기한 공지가 없습니다.</p>
     </div>
   </section>
-
-  <script>
-    function clearAllFavorites() {
-      if (confirm("모든 즐겨찾기를 삭제하시겠습니까?")) {
-        localStorage.removeItem('hlink_favorites');
-        location.reload();
-      }
-    }
-  </script>
-</body>
+</th:block>
 </html>

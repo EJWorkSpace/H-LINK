@@ -1,3 +1,4 @@
+/* src/main/resources/static/css/main.css */
 .notice-card {
   border-radius: 16px;
   transition: all 0.25s ease;
@@ -50,4 +51,8 @@
 }
 .dday-urgent {
   color: #dc3545;
+}
+
+.star-btn .bi-star-fill.text-warning {
+  color: #ffc107 !important; /* 부트스트랩 노란색 */
 }
