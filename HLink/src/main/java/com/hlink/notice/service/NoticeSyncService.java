@@ -38,8 +38,8 @@ public class NoticeSyncService {
                     .link(dto.getLink())
                     .summary(dto.getSummary())
                     .tags(dto.getTags() != null ? String.join(",", dto.getTags()) : null)
-                    .date(parseDate(dto.getDate()))
-                    .deadline(parseDate(dto.getDeadline()))
+                    .date(dto.getDate())       // ✅ 이미 LocalDateTime
+                    .deadline(dto.getDeadline()) // ✅ 이미 LocalDateTime
                     .build();
 
             noticeRepository.save(notice);
