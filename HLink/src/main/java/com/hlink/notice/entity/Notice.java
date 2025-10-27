@@ -37,7 +37,7 @@ public class Notice {
     private String category;
 
     /** 마감일(있을 때만) */
-    private LocalDateTime deadline;
+    private java.time.LocalDateTime deadline;
 
     /** ✅ Gemini 요약 결과 저장 */
     @Column(columnDefinition = "TEXT")
