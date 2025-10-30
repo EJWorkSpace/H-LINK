@@ -2,88 +2,41 @@ package com.hlink.notice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 @Entity
-@Table(name = "notices")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 public class Notice {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** 공지 제목 (크롤링 타이틀) */
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false)       // 제목은 필수
     private String title;
 
-    /** 원문 링크(URL) */
-    @Column(nullable = false, length = 1000)
-    private String link;
-
-    /** 공지 게시일(원문 기준) */
-    @Column(nullable = false)
-    private LocalDateTime date;
-
-    /** 분류(학교/학사/장학/모집 등) */
-    @Column(nullable = false, length = 100)
     private String category;
 
-    /** 마감일(있을 때만) */
-    private java.time.LocalDateTime deadline;
+    @Column(nullable = false)       // 링크는 필수
+    private String link;
 
-    /** ✅ Gemini 요약 결과 저장 */
-    @Column(columnDefinition = "TEXT")
+    @Column(nullable = false)       // 게시일은 필수(크롤링 시 null이면 now 로 대체 권장)
+    private LocalDateTime date;
+
+    private LocalDateTime deadline; // 마감일은 옵션
+
+    // ✅ AI 요약문
+    @Column(length = 1500)
     private String summary;
 
-    /** ✅ Gemini 태그 결과 저장 (쉼표 구분: 예) 장학,모집,마감임박) */
-    @Column(length = 1000)
-    private String tags;
+    // ✅ 태그: 다대일 별도 테이블로 보관 (notice_tags)
+    @ElementCollection
+    @CollectionTable(name = "notice_tags", joinColumns = @JoinColumn(name = "notice_id"))
+    @Column(name = "tag")
+    private List<String> tags;
 
-    /** 생성 시각 */
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 수정 시각 */
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        if (createdAt == null) createdAt = now;
-        if (updatedAt == null) updatedAt = now;
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    /* ===== 편의 메서드 (선택) ===== */
-
-    /** 쉼표로 저장되는 tags를 리스트로 가져오기 */
-    @Transient
-    public List<String> getTagList() {
-        if (tags == null || tags.isBlank()) return List.of();
-        return Arrays.stream(tags.split("\\s*,\\s*"))
-                .filter(s -> !s.isBlank())
-                .toList();
-    }
-
-    /** 리스트 → 쉼표 문자열로 저장하기 */
-    public void setTagList(List<String> tagList) {
-        if (tagList == null || tagList.isEmpty()) {
-            this.tags = null;
-        } else {
-            this.tags = String.join(",", tagList);
-        }
-    }
+    // ✅ 마지막 AI 분석 시각
+    private LocalDateTime aiUpdatedAt;
 }
