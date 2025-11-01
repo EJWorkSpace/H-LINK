@@ -1,0 +1,104 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <title>한림대 공지 모아보기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+    .topbar { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+    .btn { padding:8px 12px; border:1px solid #ddd; background:#fff; border-radius:8px; cursor:pointer; }
+    .btn:hover { background:#f6f6f6; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px 12px; border-bottom:1px solid #eee; vertical-align: top; }
+    th { text-align:left; color:#666; font-weight:600; }
+    .title { font-weight:600; }
+    .tags { display:flex; flex-wrap:wrap; gap:6px; }
+    .tag-chip { font-size:12px; padding:4px 8px; border:1px solid #ddd; border-radius:999px; background:#fafafa; }
+    .summary { color:#333; }
+    .link { color:#2563eb; text-decoration:none; }
+    .link:hover { text-decoration:underline; }
+    .muted { color:#9ca3af; }
+    .actions { display:flex; gap:8px; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <h2 style="margin:0;">공지 목록</h2>
+
+    <form th:action="@{/admin/sync}" method="post" style="margin-left:auto;">
+      <button class="btn" type="submit">🔄 최신 공지 동기화</button>
+    </form>
+
+    <form th:action="@{/admin/analyze-missing}" method="post">
+      <button class="btn" type="submit">🤖 요약 없는 것만 분석</button>
+    </form>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:34%;">제목 / 링크</th>
+        <th style="width:18%;">분류 / 날짜</th>
+        <th style="width:30%;">요약</th>
+        <th style="width:18%;">태그 / 액션</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="n : ${notices}">
+        <!-- 제목 / 링크 -->
+        <td>
+          <div class="title" th:text="${n.title}">제목</div>
+          <a class="link" th:href="${n.link}" target="_blank" rel="noreferrer">원문 보기 ↗</a>
+        </td>
+
+        <!-- 카테고리 / 날짜 -->
+        <td>
+          <div th:text="${(n.category != null and #strings.trim(n.category) != '') ? n.category : '미분류'}">장학</div>
+
+          <div class="muted"
+               th:text="${n.date != null ? #temporals.format(n.date, 'yyyy-MM-dd HH:mm') : '날짜 없음'}">
+            2025-10-29
+          </div>
+
+          <div class="muted" th:if="${n.deadline != null}">
+            마감:
+            <span th:text="${#temporals.format(n.deadline, 'yyyy-MM-dd HH:mm')}">2025-11-05</span>
+          </div>
+
+          <div class="muted" th:if="${n.aiUpdatedAt != null}">
+            분석:
+            <span th:text="${#temporals.format(n.aiUpdatedAt, 'yyyy-MM-dd HH:mm')}">2025-10-30</span>
+          </div>
+        </td>
+
+        <!-- 요약 -->
+        <td class="summary"
+            th:text="${(n.summary != null and #strings.trim(n.summary) != '') ? n.summary : '요약 없음 (분석 버튼을 눌러 생성)'}">
+          요약 없음
+        </td>
+
+        <!-- 태그 / 액션 -->
+        <td>
+          <div class="tags">
+            <!-- List<String> tags 기준 -->
+            <span class="tag-chip"
+                  th:each="t : ${n.tags}"
+                  th:if="${t != null and #strings.trim(t) != ''}"
+                  th:text="${#strings.trim(t)}">태그</span>
+          </div>
+
+          <div class="actions" style="margin-top:8px;">
+            <!-- 안전한 경로 변수 바인딩 -->
+            <form th:action="@{/notices/{id}/analyze(id=${n.id})}" method="post">
+              <button class="btn" type="submit">이 공지 요약</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>

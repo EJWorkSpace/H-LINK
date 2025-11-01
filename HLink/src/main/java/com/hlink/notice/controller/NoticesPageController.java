@@ -1,22 +1,22 @@
-// ✅ 남겨둘 컨트롤러 (DB 기반)
+// 파일: com/hlink/notice/controller/NoticesPageController.java
 package com.hlink.notice.controller;
 
-import com.hlink.notice.repository.NoticeRepository;
+import com.hlink.notice.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/ui") // ✅ prefix 추가
 public class NoticesPageController {
-    private final NoticeRepository noticeRepository;
 
-    @GetMapping({"/", "/notices"})
+    private final NoticeService noticeService;
+
+    @GetMapping("/notices") // 최종 URL: /ui/notices
     public String noticesPage(Model model) {
-        model.addAttribute("pageTitle", "공지");
-        model.addAttribute("activeTab", "notices");
-        model.addAttribute("notices", noticeRepository.findAll());
-        return "notices";
+        model.addAttribute("notices", noticeService.findAll());
+        return "notices/list";
     }
 }
