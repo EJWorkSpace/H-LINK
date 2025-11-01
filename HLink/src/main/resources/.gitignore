@@ -1,0 +1,16 @@
+# === 환경 변수 (보안) ===
+.env
+.env.*
+*.env
+
+# === OS / IDE / 빌드 ===
+.DS_Store
+target/
+bin/
+.classpath
+.project
+.settings/
+
+# === 로그 / 캐시 ===
+*.log
+*.tmp
