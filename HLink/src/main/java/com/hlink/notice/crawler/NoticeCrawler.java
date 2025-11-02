@@ -15,11 +15,11 @@ import java.util.*;
 public class NoticeCrawler {
 
     private static final Map<String, String> FEEDS = Map.of(
-        "학사공지", "https://www.hallym.ac.kr/bbs/hallym/157/rssList.do?row=50",
-        "장학/등록공지", "https://www.hallym.ac.kr/bbs/hallym/156/rssList.do?row=50",
-        "일반공지", "https://www.hallym.ac.kr/bbs/hallym/155/rssList.do?row=50",
-        "채용공지", "https://www.hallym.ac.kr/bbs/hallym/151/rssList.do?row=50",
-        "SW중심대학사업단", "https://www.hallym.ac.kr/bbs/hlsw/335/rssList.do?row=50"
+        "학사공지", "https://www.hallym.ac.kr/bbs/hallym/157/rssList.do?row=3",
+        "장학/등록공지", "https://www.hallym.ac.kr/bbs/hallym/156/rssList.do?row=3",
+        "일반공지", "https://www.hallym.ac.kr/bbs/hallym/155/rssList.do?row=3",
+        "채용공지", "https://www.hallym.ac.kr/bbs/hallym/151/rssList.do?row=3",
+        "SW중심대학사업단", "https://www.hallym.ac.kr/bbs/hlsw/335/rssList.do?row=3"
     );
 
     public List<NoticeDTO> crawlAll() {
@@ -59,14 +59,35 @@ public class NoticeCrawler {
                 String title = getTagValue("title", item);
                 if (title != null) title = title.replaceAll("}$", "").trim();
                 String link = "https://www.hallym.ac.kr" + getTagValue("link", item);
-                String date = getTagValue("pubDate", item);
+                String pubDate = getTagValue("pubDate", item);
+
+             // ✅ pubDate 문자열을 LocalDateTime 포맷으로 변환
+             String formattedDate = null;
+             try {
+                 java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(
+                         pubDate,
+                         java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")
+                 );
+                 formattedDate = ldt.toString(); // "2025-11-02T00:00:00"
+             } catch (Exception e) {
+                 System.err.println("⚠️  날짜 변환 실패: " + pubDate);
+             }
+
                 String author = getTagValue("author", item);
                 String description = getTagValue("description", item);
 
                 notices.add(new NoticeDTO(
-                        null, title, category, date, author, description, List.of(), link
+                        null,
+                        title,
+                        category,
+                        formattedDate, // ✅ 변환된 ISO 포맷
+                        author,
+                        description,
+                        List.of(),
+                        link
                 ));
             }
+
             System.out.println("✅ [" + category + "] " + notices.size() + "개 항목 수집 완료");
 
         } catch (Exception e) {
