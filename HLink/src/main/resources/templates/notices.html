@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko"
       th:replace="~{layout :: layout(~{::content})}">
+
 <th:block th:fragment="content">
   <section class="animate-fadein">
     <!-- 필터 바 -->
@@ -24,8 +25,13 @@
 
     <!-- 카드 리스트 -->
     <div id="noticeList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      <div class="col" th:each="n : ${notices}" th:data-id="${n.id}"
-           th:data-category="${n.category}" th:data-deadline="${n.deadline}">
+      <div class="col"
+           th:each="n : ${notices}"
+           th:data-id="${n.id}"
+           th:data-category="${n.category}"
+           th:data-deadline="${n.deadline != null ? #temporals.format(n.deadline, 'yyyy-MM-dd''T''HH:mm:ss') : ''}"
+           th:data-date="${#temporals.format(n.date, 'yyyy-MM-dd''T''HH:mm:ss')}">
+
         <div class="card notice-card h-100 border-0 shadow-sm">
           <div class="card-body position-relative">
 
@@ -40,22 +46,24 @@
               </button>
             </div>
 
-            <!-- 제목만 링크 -->
+            <!-- 제목 -->
             <h6 class="card-title fw-semibold mb-1">
               <a th:href="${n.link}" target="_blank" class="text-decoration-none text-dark stretched-link">
                 <span th:text="${n.title}">제목</span>
               </a>
             </h6>
 
-            <!-- 날짜 및 요약 -->
+            <!-- 날짜 및 D-Day -->
             <p class="small text-secondary mb-1">
               <i class="bi bi-calendar-event"></i>
-              <span th:text="${n.date}">2025-10-26</span>
-              <span class="ms-2 dday-pill">D-3</span>
+              <span th:text="${#temporals.format(n.date, 'yyyy-MM-dd')}">2025-10-26</span>
+              <span class="ms-2 dday-pill">D-0</span>
             </p>
 
+            <!-- 요약 -->
             <p class="small mb-2" th:text="${n.summary} ?: '요약 준비 중...'"></p>
 
+            <!-- 태그 -->
             <div class="small text-secondary">
               <span th:each="t : ${n.tags}" class="tag-badge" th:text="${t}">태그</span>
             </div>

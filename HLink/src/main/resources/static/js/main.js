@@ -52,8 +52,8 @@ function sortNotices(mode) {
   const items = qsa('.col', list).filter(el => el.style.display !== 'none');
   items.sort((a,b) => {
     if (mode === 'latest') {
-      const da = new Date(a.querySelector('.small span')?.textContent || 0);
-      const db = new Date(b.querySelector('.small span')?.textContent || 0);
+      const da = new Date(a.getAttribute('data-date') || 0);
+      const db = new Date(b.getAttribute('data-date') || 0);
       return db - da;
     } else {
       const ga = toDdayValue(a.getAttribute('data-deadline'));
@@ -71,28 +71,49 @@ function toDdayValue(deadlineStr) {
   return Math.ceil((d - today) / (1000*60*60*24));
 }
 
+// ======================= D-Day 계산 =======================
+function pickTargetDateISO(col) {
+  // 1) deadline이 있으면 그걸로 D-day 계산
+  const dl = col.getAttribute('data-deadline');
+  if (dl && dl.trim() !== '') return dl;
+
+  // 2) 없으면 등록일(date)로 계산
+  const d = col.getAttribute('data-date');
+  return (d && d.trim() !== '') ? d : null;
+}
+
+function calcDdayFromISO(iso) {
+  if (!iso) return '';
+  const target = new Date(iso);
+  const today = new Date();
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const diff = Math.ceil((target.setHours(0,0,0,0) - today.setHours(0,0,0,0)) / msPerDay);
+
+  if (diff > 0)   return `D-${diff}`;
+  if (diff === 0) return 'D-Day';
+  return `D+${Math.abs(diff)}`;
+}
+
 function decorateDday() {
-  qsa('#noticeList .col').forEach(col => {
-    const deadline = col.getAttribute('data-deadline');
+  document.querySelectorAll('#noticeList .col').forEach(col => {
+    const iso = pickTargetDateISO(col); // deadline > date
     const pill = col.querySelector('.dday-pill');
-    if (!pill || !deadline) return;
-    const d = toDdayValue(deadline);
-    pill.textContent = (d >= 0) ? `D-${d}` : `D+${Math.abs(d)}`;
-    if (d <= 3) pill.classList.add('dday-urgent');
+    if (!pill) return;
+    const label = calcDdayFromISO(iso);
+    pill.textContent = label;
+    if (label.startsWith('D-')) {
+      const n = Number(label.slice(2));
+      if (!Number.isNaN(n) && n <= 3) pill.classList.add('dday-urgent');
+    }
   });
 }
 
 // ======================= 즐겨찾기 =======================
 async function toggleFavorite(button, event) {
-  event.stopPropagation(); // 카드 링크 클릭 방지
+  event.stopPropagation();
 
   const noticeId = Number(button.getAttribute('data-id'));
-  if (!noticeId || noticeId <= 0) {
-    console.warn("⚠️ 잘못된 noticeId:", noticeId);
-    return;
-  }
-
-  console.log("⭐ 즐겨찾기 토글 시도:", noticeId);
+  if (!noticeId || noticeId <= 0) return;
 
   try {
     const res = await fetch('/api/favorites/toggle', {
@@ -114,8 +135,6 @@ async function toggleFavorite(button, event) {
       icon.classList.remove('bi-star-fill', 'text-warning');
       icon.classList.add('bi-star');
     }
-
-    console.log("✅ 즐겨찾기 토글 완료:", noticeId);
 
   } catch (err) {
     console.error("❌ 즐겨찾기 토글 실패:", err);
@@ -150,11 +169,17 @@ async function hydrateStarsFromServer() {
 // ======================= 초기화 =======================
 document.addEventListener('DOMContentLoaded', () => {
   setActiveNav();
-  decorateDday();
   hydrateStarsFromServer();
+
+  // ✅ D-Day 표시 업데이트
+  qsa('[data-date]').forEach(card => {
+    const iso = card.getAttribute('data-date');
+    const pill = card.querySelector('.dday-pill');
+    if (pill) pill.textContent = calcDday(iso);
+  });
 });
 
-// 전역 노출 (Thymeleaf 템플릿에서 onclick용)
+// 전역 노출
 window.handleSearch = handleSearch;
 window.filterByCategory = filterByCategory;
 window.sortNotices = sortNotices;
