@@ -4,28 +4,24 @@ import com.hlink.notice.dto.NoticeDTO;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
 public class NoticeCrawler {
 
     private static final Map<String, String> FEEDS = Map.of(
-        "학사공지", "https://www.hallym.ac.kr/bbs/hallym/157/rssList.do?row=50",
-        "장학/등록공지", "https://www.hallym.ac.kr/bbs/hallym/156/rssList.do?row=50",
-        "일반공지", "https://www.hallym.ac.kr/bbs/hallym/155/rssList.do?row=50",
-        "채용공지", "https://www.hallym.ac.kr/bbs/hallym/151/rssList.do?row=50",
-        "SW중심대학사업단", "https://www.hallym.ac.kr/bbs/hlsw/335/rssList.do?row=50"
+        "학사공지", "https://www.hallym.ac.kr/bbs/hallym/157/rssList.do?row=3",
+        "장학/등록공지", "https://www.hallym.ac.kr/bbs/hallym/156/rssList.do?row=3",
+        "일반공지", "https://www.hallym.ac.kr/bbs/hallym/155/rssList.do?row=3",
+        "채용공지", "https://www.hallym.ac.kr/bbs/hallym/151/rssList.do?row=3",
+        "SW중심대학사업단", "https://www.hallym.ac.kr/bbs/hlsw/335/rssList.do?row=3"
     );
 
-    /** 모든 카테고리의 공지를 수집 */
     public List<NoticeDTO> crawlAll() {
         List<NoticeDTO> allNotices = new ArrayList<>();
 
@@ -38,7 +34,6 @@ public class NoticeCrawler {
         return allNotices;
     }
 
-    /** RSS 피드에서 공지 항목을 추출 */
     private List<NoticeDTO> fetchRss(String category, String feedUrl) {
         List<NoticeDTO> notices = new ArrayList<>();
 
@@ -46,7 +41,9 @@ public class NoticeCrawler {
             URL url = new URL(feedUrl);
             Scanner scanner = new Scanner(url.openStream());
             StringBuilder xmlBuilder = new StringBuilder();
-            while (scanner.hasNext()) xmlBuilder.append(scanner.nextLine());
+            while (scanner.hasNext()) {
+                xmlBuilder.append(scanner.nextLine());
+            }
             scanner.close();
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -61,27 +58,34 @@ public class NoticeCrawler {
 
                 String title = getTagValue("title", item);
                 if (title != null) title = title.replaceAll("}$", "").trim();
-
                 String link = "https://www.hallym.ac.kr" + getTagValue("link", item);
-                String dateStr = getTagValue("pubDate", item);
+                String pubDate = getTagValue("pubDate", item);
+
+             // ✅ pubDate 문자열을 LocalDateTime 포맷으로 변환
+             String formattedDate = null;
+             try {
+                 java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(
+                         pubDate,
+                         java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")
+                 );
+                 formattedDate = ldt.toString(); // "2025-11-02T00:00:00"
+             } catch (Exception e) {
+                 System.err.println("⚠️  날짜 변환 실패: " + pubDate);
+             }
+
+                String author = getTagValue("author", item);
                 String description = getTagValue("description", item);
 
-                // pubDate → LocalDateTime 변환
-                LocalDateTime date = parsePubDateToLocalDateTime(dateStr);
-
-                // NoticeDTO 빌더로 객체 생성 (순서 실수 방지)
-                NoticeDTO dto = NoticeDTO.builder()
-                        .id(null)
-                        .title(title)
-                        .link(link)
-                        .date(date)
-                        .category(category)
-                        .deadline(null) // RSS에는 마감일이 없음
-                        .summary(description)
-                        .tags(Collections.emptyList())
-                        .build();
-
-                notices.add(dto);
+                notices.add(new NoticeDTO(
+                        null,
+                        title,
+                        category,
+                        formattedDate, // ✅ 변환된 ISO 포맷
+                        author,
+                        description,
+                        List.of(),
+                        link
+                ));
             }
 
             System.out.println("✅ [" + category + "] " + notices.size() + "개 항목 수집 완료");
@@ -93,19 +97,6 @@ public class NoticeCrawler {
         return notices;
     }
 
-    /** pubDate 문자열을 LocalDateTime으로 변환 */
-    private LocalDateTime parsePubDateToLocalDateTime(String pubDate) {
-        if (pubDate == null || pubDate.isBlank()) return null;
-        try {
-            return ZonedDateTime.parse(pubDate, DateTimeFormatter.RFC_1123_DATE_TIME)
-                    .withZoneSameInstant(ZoneId.systemDefault())
-                    .toLocalDateTime();
-        } catch (Exception e) {
-            return null; // 형식 안 맞으면 null
-        }
-    }
-
-    /** XML 태그 값 추출 */
     private String getTagValue(String tag, Element element) {
         NodeList nodeList = element.getElementsByTagName(tag);
         if (nodeList.getLength() > 0 && nodeList.item(0).getFirstChild() != null) {
